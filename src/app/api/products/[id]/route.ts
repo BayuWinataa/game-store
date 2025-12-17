@@ -29,3 +29,25 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 		return NextResponse.json({ message: 'Failed to fetch product' }, { status: 500 });
 	}
 }
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+	try {
+		const { id } = await params;
+		if (!id) {
+			return NextResponse.json({ message: 'Product ID is required' }, { status: 400 });
+		}
+		const deletedProduct = await prisma.product.delete({
+			where: { id },
+		});
+		return NextResponse.json(
+			{
+				message: 'Product deleted successfully',
+				data: deletedProduct,
+			},
+			{ status: 200 }
+		);
+	} catch (error) {
+		console.error('DELETE /products/[id] error:', error);
+		return NextResponse.json({ message: 'Failed to delete product' }, { status: 500 });
+	}
+}
