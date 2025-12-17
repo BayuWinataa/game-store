@@ -21,3 +21,35 @@ export async function GET() {
 		);
 	}
 }
+
+export async function POST(request: Request) {
+	try {
+		const body = await request.json();
+		const { name, description, price, categoryId, imageUrl, videoUrl } = body;
+		const newProduct = await prisma.product.create({
+			data: {
+				name,
+				description,
+				price,
+				imageUrl: imageUrl || null,
+				videoUrl: videoUrl || null,
+				categoryId: categoryId || null,
+			},
+		});
+		return NextResponse.json(
+			{
+				message: 'Product created successfully',
+				data: newProduct,
+			},
+			{ status: 201 }
+		);
+	} catch (error) {
+		console.error('POST /products error:', error);
+		return NextResponse.json(
+			{
+				message: `Failed to create product`,
+			},
+			{ status: 500 }
+		);
+	}
+}
