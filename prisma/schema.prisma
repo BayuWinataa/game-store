@@ -6,31 +6,38 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
 model User {
-  id        String     @id 
+  id        String     @id
   email     String     @unique
   username  String?    @unique
   password  String
   role      Role       @default(USER)
-
-  orders    Order[]
-  favorites Favorite[]
-
   createdAt DateTime   @default(now())
+  favorites Favorite[]
+  orders    Order[]
 }
 
 model Product {
-  id        String     @id @default(cuid())
-  name      String
+  id          String      @id @default(cuid())
+  name        String
   description String?
-  price     Int
-  imageUrl  String?
-  videoUrl  String?
+  price       Int
+  imageUrl    String?
+  videoUrl    String?
+  categoryId  String?
+  createdAt   DateTime    @default(now())
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  favorites   Favorite[]
+  orderItems  OrderItem[]
+}
 
-  orderItems OrderItem[]
-  favorites  Favorite[]
-
-  createdAt DateTime   @default(now())
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
 }
 
 model Order {
@@ -38,33 +45,28 @@ model Order {
   userId    String
   total     Int
   status    OrderStatus @default(PENDING)
-
+  createdAt DateTime    @default(now())
   user      User        @relation(fields: [userId], references: [id])
   items     OrderItem[]
-
-  createdAt DateTime    @default(now())
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId  String
+  id        String  @id @default(cuid())
+  orderId   String
   productId String
-  quantity Int
-  price    Int
-
-  order    Order    @relation(fields: [orderId], references: [id])
-  product  Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model Favorite {
   id        String   @id @default(cuid())
   userId    String
   productId String
-
-  user      User     @relation(fields: [userId], references: [id])
-  product  Product  @relation(fields: [productId], references: [id])
-
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
 }
