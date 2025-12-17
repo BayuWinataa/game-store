@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model User {
+  id        String     @id 
+  email     String     @unique
+  username  String?    @unique
+  password  String
+  role      Role       @default(USER)
+
+  orders    Order[]
+  favorites Favorite[]
+
+  createdAt DateTime   @default(now())
+}
+
+model Product {
+  id        String     @id @default(cuid())
+  name      String
+  description String?
+  price     Int
+  imageUrl  String?
+  videoUrl  String?
+
+  orderItems OrderItem[]
+  favorites  Favorite[]
+
+  createdAt DateTime   @default(now())
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  total     Int
+  status    OrderStatus @default(PENDING)
+
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId  String
+  productId String
+  quantity Int
+  price    Int
+
+  order    Order    @relation(fields: [orderId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+
+  user      User     @relation(fields: [userId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+}
